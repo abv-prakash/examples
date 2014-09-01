@@ -106,8 +106,28 @@ public class RegEx
 
     }
 
+    public static void testProtocolRegex()
+    {
+        String regex = "(.*)(://)(.*)";
+
+        Pattern pattern = Pattern.compile(regex);
+
+        String testString = "http://ad.mo.doubleclick.net/inmobitracker/click/phoenix?c=4176&sub1=$iat_fw_cinfo";
+
+        Matcher matcher = pattern.matcher(testString);
+
+        System.out.println("matcher :" + matcher);
+        if (matcher.matches())
+        {
+            System.out.println("matcher :" + matcher.group());
+        }
+
+    }
+
     public static void main(final String args[])
     {
+        testProtocolRegex();
+
         testStringRegex();
 
         // String to be scanned to find the pattern.
@@ -141,5 +161,4 @@ public class RegEx
 
         // matchesRegex(impid, impidPattern);
     }
-
 }

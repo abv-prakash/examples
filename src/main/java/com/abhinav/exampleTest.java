@@ -1,7 +1,9 @@
 package com.abhinav;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class exampleTest
@@ -60,9 +62,29 @@ public class exampleTest
 
     }
 
+    public static void testNullMap()
+    {
+
+        List<String> list = null;
+
+        // for (String item : list)
+        // {
+        // System.out.println("test passed");
+        // }
+
+        Map<String, String> fwMap = new HashMap<String, String>();
+
+        for (Entry<String, String> entry : fwMap.entrySet())
+        {
+            System.out.println("test passed");
+        }
+
+    }
+
     public static void main(final String[] args)
     {
-        testStringReplace();
+        testNullMap();
+        // testStringReplace();
 
     }
 
