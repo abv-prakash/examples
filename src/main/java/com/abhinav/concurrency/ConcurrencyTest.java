@@ -7,11 +7,15 @@ package com.abhinav.concurrency;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,8 +26,10 @@ import org.apache.commons.lang.math.RandomUtils;
  */
 public class ConcurrencyTest {
 
+  final static Map<String, Boolean> concurrentMap = new ConcurrentHashMap<String, Boolean>();
+  final static Set<String> pool = Collections.newSetFromMap(concurrentMap);
   // final Set<String> pool = Collections.synchronizedSet(new HashSet<String>());
-  final static HashSet<String> pool = new HashSet<String>();
+  // final static HashSet<String> pool = new HashSet<String>();
   private final static Object lockObj = new Object();
 
 
@@ -57,11 +63,69 @@ public class ConcurrencyTest {
     System.out.println("Doing something in critical section for thread :"
         + Thread.currentThread().getName() + "key:" + key);
     Thread.sleep(20000);
+    pool.add(key);
     unlock(key);
     System.out.println("Doing something in Non critical section for thread :"
         + Thread.currentThread().getName() + "key:" + key);
+  }
 
+  public void concurrentModiExceptionTest(String key) throws InterruptedException {
+    // lock(key);
+    System.out.println("Doing something in critical section for thread :"
+        + Thread.currentThread().getName() + "key:" + key);
+    // Thread.sleep(20000);
+    pool.add(key);
+    // unlock(key);
+    System.out.println("Doing something in Non critical section for thread :"
+        + Thread.currentThread().getName() + "key:" + key);
+    Iterator<String> itr = pool.iterator();
+    while (itr.hasNext()) {
+      String subKeu = itr.next();
+      System.out.println("pool before:" + pool);
+      Thread.sleep(2000);
+      pool.remove(subKeu);
+      System.out.println("pool after:" + pool);
+    }
+  }
 
+  public void testExcetion() {
+    ExecutorService executors = Executors.newFixedThreadPool(10);
+    for (int i = 1; i <= 10; i++) {
+      final int j = i;
+      executors.execute(new Runnable() {
+
+        public void run() {
+          // Thread.currentThread().setName(threadNames.get(j));
+          System.out.println("Started thread :" + Thread.currentThread().getName());
+          // for (int i = 0; i < 10; i++) {
+          try {
+            concurrentModiExceptionTest(String.valueOf(j + 100));
+          } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+          // }
+        }
+
+      });
+
+      executors.execute(new Runnable() {
+
+        public void run() {
+          // Thread.currentThread().setName(threadNames.get(j));
+          System.out.println("Started thread :" + Thread.currentThread().getName());
+          // for (int i = 0; i < 10; i++) {
+          try {
+            concurrentModiExceptionTest(String.valueOf(j + 200));
+          } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+          // }
+        }
+
+      });
+    }
   }
 
   /**
@@ -73,11 +137,7 @@ public class ConcurrencyTest {
     ExecutorService executors = Executors.newFixedThreadPool(10);
     final ConcurrencyTest cTest = new ConcurrencyTest();
 
-    final List<String> threadNames = new ArrayList<String>();
-    for (int i = 0; i < 5; i++) {
-      threadNames.add("Thread-" + RandomUtils.nextInt());
-    }
-
+    cTest.testExcetion();
     System.out.println("Started thread :" + Thread.currentThread().getName());
     executors.execute(new Runnable() {
 
@@ -104,42 +164,7 @@ public class ConcurrencyTest {
     Thread.sleep(2000);
     System.out.println("Invoked first Iteration...");
 
-    for (int i = 1; i <= 2; i++) {
-      final int j = i;
-      executors.execute(new Runnable() {
 
-        public void run() {
-          // Thread.currentThread().setName(threadNames.get(j));
-          System.out.println("Started thread :" + Thread.currentThread().getName());
-          // for (int i = 0; i < 10; i++) {
-          try {
-            cTest.doSomething(String.valueOf(100));
-          } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          // }
-        }
-
-      });
-
-      executors.execute(new Runnable() {
-
-        public void run() {
-          // Thread.currentThread().setName(threadNames.get(j));
-          System.out.println("Started thread :" + Thread.currentThread().getName());
-          // for (int i = 0; i < 10; i++) {
-          try {
-            cTest.doSomething(String.valueOf(200));
-          } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          // }
-        }
-
-      });
-    }
     Thread.sleep(1000);
     System.out.println("Invoked Second Iteration...");
 
